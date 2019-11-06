@@ -2,12 +2,13 @@
 #coding=utf-8
 
 import numpy as np
-import matplotlib as mpl
-from matplotlib import cm
-import matplotlib.pyplot as plt
+#import matplotlib as mpl
+#from matplotlib import cm
+#import matplotlib.pyplot as plt
 import math
 import os
-import pylab as pl
+#import pylab as pl
+from pathlib import Path
 
 class Distance():
     def __init__(self):
@@ -56,27 +57,57 @@ class Distance():
         
         return elementName, elementAmount, coordinate
 
-    def calcuateDistance(self):
-            dist = []
-            elementName, elementAmount, coordinate = self.getElementinfo()
-            for i in range(0, elementAmount[0]):
-                for j in range(elementAmount[0] + elementAmount[1], sum(elementAmount)):
-                    tmp = coordinate[i] - coordinate[j]
-                    dist.append(math.sqrt(math.pow(tmp[0], 2) + math.pow(tmp[1], 2) + math.pow(tmp[2], 2)))
-                    #print i, j, coordinate[i], coordinate[j], dist  #Debug
-            print("mini bond of", elementName[0] + "-" + elementName[2], "is", min(dist)) 
+    def calculateDistance(self):
+        miniDist = []
+        dist = []
+        elementName, elementAmount, coordinate = self.getElementinfo()
+        for i in range(0, elementAmount[0]):
+            for j in range(elementAmount[0] + elementAmount[1], sum(elementAmount)):
+                tmp = coordinate[i] - coordinate[j]
+                dist.append(math.sqrt(math.pow(tmp[0], 2) + math.pow(tmp[1], 2) + math.pow(tmp[2], 2)))
+                #print i, j, coordinate[i], coordinate[j], dist  #Debug
+        #print("mini bond of", elementName[0] + "-" + elementName[2], "is", min(dist)) 
+        miniDist.append(min(dist))
 
-            dist = []
-            elementName, elementAmount, coordinate = self.getElementinfo()
-            for i in range(elementAmount[0], elementAmount[0] + elementAmount[1]):
-                for j in range(elementAmount[0] + elementAmount[1], sum(elementAmount)):
-                    tmp = coordinate[i] - coordinate[j]
-                    dist.append(math.sqrt(math.pow(tmp[0], 2) + math.pow(tmp[1], 2) + math.pow(tmp[2], 2)))
-                    #print i, j, coordinate[i], coordinate[j], dist  #Debug
-            print("mini bond of", elementName[1] + "-" + elementName[2], "is", min(dist)) 
+        dist = []
+        elementName, elementAmount, coordinate = self.getElementinfo()
+        for i in range(elementAmount[0], elementAmount[0] + elementAmount[1]):
+            for j in range(elementAmount[0] + elementAmount[1], sum(elementAmount)):
+                tmp = coordinate[i] - coordinate[j]
+                dist.append(math.sqrt(math.pow(tmp[0], 2) + math.pow(tmp[1], 2) + math.pow(tmp[2], 2)))
+                #print i, j, coordinate[i], coordinate[j], dist  #Debug
+        #print("mini bond of", elementName[1] + "-" + elementName[2], "is", min(dist)) 
+        miniDist.append(min(dist))
+
+        return miniDist
+
+    def calculateALL(self):
+        rootDir = os.getcwd()
+        fileDirs = os.listdir(rootDir)
+        #print(fileDirs)  #Debug
+
+        MiniDistData = open("MiniDistData.dat",'w')
+        for file in fileDirs:
+            if os.path.exists(rootDir + '/' + file + '/band/POSCAR'):
+                os.chdir(rootDir + '/' + file + '/band')
+                for n in self.calculateDistance():
+                    MiniDistData.write(str(n) + ' ')
+                MiniDistData.write('\n')
+                Gap = os.popen('cp ~/scripts/cbvb.x ./; ./cbvb.x')
+                #for line in Gap.readlines():
+                #    print(line)
+                #print(Gap.readline())
+                MiniDistData.write(str(Gap.readline().split()[2]))
+                MiniDistData.write('\n')
+                
+
+        MiniDistData.close()
+
+
+        
 
     
-Distance().calcuateDistance()
-
+#print(Distance().calculateDistance())
+Distance().calculateALL()
 
 
